@@ -40,6 +40,7 @@ type (
 	// CLIFlags represents the available flags on the CLI
 	CLIFlags struct {
 		Addr                      *string
+		AddrHTTPS                 *string
 		TunnelAddr                *string
 		TunnelPort                *string
 		AdminPassword             *string
@@ -57,6 +58,7 @@ type (
 		TLSCacert                 *string
 		TLSCert                   *string
 		TLSKey                    *string
+		HTTPDisabled              *bool
 		SSL                       *bool
 		SSLCert                   *string
 		SSLKey                    *string
@@ -692,6 +694,14 @@ type (
 	// SoftwareEdition represents an edition of Portainer
 	SoftwareEdition int
 
+	// SSLSettings represents a pair of SSL certificate and key
+	SSLSettings struct {
+		CertPath    string `json:"certPath"`
+		KeyPath     string `json:"keyPath"`
+		SelfSigned  bool   `json:"selfSigned"`
+		HTTPEnabled bool   `json:"httpEnabled"`
+	}
+
 	// Stack represents a Docker stack created via docker stack deploy
 	Stack struct {
 		// Stack Identifier
@@ -1044,6 +1054,7 @@ type (
 		ResourceControl() ResourceControlService
 		Role() RoleService
 		Settings() SettingsService
+		SSLSettings() SSLSettingsService
 		Stack() StackService
 		Tag() TagService
 		TeamMembership() TeamMembershipService
@@ -1154,6 +1165,9 @@ type (
 		GetCustomTemplateProjectPath(identifier string) string
 		GetTemporaryPath() (string, error)
 		GetDatastorePath() string
+		GetDefaultSSLCertsPath() (string, string)
+		StoreSSLCertPair(cert, key []byte) (string, string, error)
+		CopySSLCertPair(certPath, keyPath string) (string, string, error)
 	}
 
 	// GitService represents a service for managing Git
@@ -1254,6 +1268,12 @@ type (
 	// Server defines the interface to serve the API
 	Server interface {
 		Start() error
+	}
+
+	// SSLSettingsService represents a service for managing application settings
+	SSLSettingsService interface {
+		Settings() (*SSLSettings, error)
+		UpdateSettings(settings *SSLSettings) error
 	}
 
 	// StackService represents a service for managing stack data
