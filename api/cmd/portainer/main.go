@@ -213,18 +213,17 @@ func updateSettingsFromFlags(dataStore portainer.DataStore, flags *portainer.CLI
 	}
 
 	httpEnabled := !*flags.HTTPDisabled
-	if httpEnabled {
-		sslSettings, err := dataStore.SSLSettings().Settings()
-		if err != nil {
-			return err
-		}
 
-		sslSettings.HTTPEnabled = httpEnabled
+	sslSettings, err := dataStore.SSLSettings().Settings()
+	if err != nil {
+		return err
+	}
 
-		err = dataStore.SSLSettings().UpdateSettings(sslSettings)
-		if err != nil {
-			return err
-		}
+	sslSettings.HTTPEnabled = httpEnabled
+
+	err = dataStore.SSLSettings().UpdateSettings(sslSettings)
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -520,7 +519,10 @@ func buildServer(flags *portainer.CLIFlags) portainer.Server {
 		log.Fatalf("failed starting license service: %s", err)
 	}
 
-	httpEnabled := !*flags.HTTPDisabled
+	sslSettings, err := dataStore.SSLSettings().Settings()
+	if err != nil {
+		log.Fatalf("failed to fetch ssl settings from DB")
+	}
 
 	return &http.Server{
 		AuthorizationService:        authorizationService,
@@ -528,7 +530,7 @@ func buildServer(flags *portainer.CLIFlags) portainer.Server {
 		Status:                      applicationStatus,
 		BindAddress:                 *flags.Addr,
 		BindAddressHTTPS:            *flags.AddrHTTPS,
-		HTTPEnabled:                 httpEnabled,
+		HTTPEnabled:                 sslSettings.HTTPEnabled,
 		AssetsPath:                  *flags.Assets,
 		DataStore:                   dataStore,
 		SwarmStackManager:           swarmStackManager,
