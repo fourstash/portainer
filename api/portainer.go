@@ -57,6 +57,7 @@ type (
 		TLSCacert                 *string
 		TLSCert                   *string
 		TLSKey                    *string
+		Rollback                  *bool
 		SSL                       *bool
 		SSLCert                   *string
 		SSLKey                    *string
@@ -1029,6 +1030,7 @@ type (
 		Close() error
 		IsNew() bool
 		MigrateData(force bool) error
+		Rollback(force bool) error
 		CheckCurrentEdition() error
 		BackupTo(w io.Writer) error
 
